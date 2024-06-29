@@ -29,10 +29,19 @@ func main() {
 
 	graph, startNode, endNode, numAnts := parseGraphData(data)
 	if startNode == endNode {
-		checkError("ERROR: invalid data format,Start room is equal to End room")
+		checkError("ERROR: Start room is equal to End room")
 	}
+	if numAnts == 0 {
+		checkError("ERROR: No ants specified")
+	}
+
 	antNames := generateAntNames(numAnts)
 	utilsPaths := utilPaths(graph, startNode, endNode)
+
+	if len(utilsPaths) == 0 {
+		checkError("ERROR: No valid paths found")
+	}
+
 	paths := matriceToStruct(utilsPaths)
 	resolve(paths, antNames)
 	displayAnt(paths, antNames)
@@ -96,8 +105,7 @@ func parseGraphData(data string) (map[string][]string, string, string, int) {
 func utilPaths(graph map[string][]string, startNode string, endNode string) [][]string {
 	allPaths := findPaths(graph, startNode, endNode)
 	if len(allPaths) == 0 {
-		checkError("ERROR: invalid data format, No paths found")
-		os.Exit(1)
+		return [][]string{} // Return empty slice if no paths found
 	}
 
 	allCombinations := [][][]string{}
@@ -208,18 +216,22 @@ func generateAntNames(nbrFourmi int) []string {
 }
 
 func resolve(paths []*AntRoom, nameAnts []string) {
+	if len(paths) == 0 {
+		checkError("ERROR: No paths provided to resolve")
+	}
+
 	currentPath := paths[0]
-	currentPath.nbr = currentPath.nbr + 1
+	currentPath.nbr++
 	currentPath.Ant = append(currentPath.Ant, nameAnts[0])
-	var index = 0
+	index := 0
 	for i := 1; i < len(nameAnts); i++ {
 		if index+1 < len(paths) {
 			placeAnt(paths, index, nameAnts[i])
-			index += 1
+			index++
 		} else {
 			index = 0
 			placeAnt(paths, index, nameAnts[i])
-			index += 1
+			index++
 		}
 	}
 }
@@ -227,7 +239,7 @@ func resolve(paths []*AntRoom, nameAnts []string) {
 func placeAnt(paths []*AntRoom, currentIndex int, nameAnt string) {
 	if len(paths) == 1 {
 		paths[currentIndex].Ant = append(paths[currentIndex].Ant, nameAnt)
-		paths[currentIndex].nbr += 1
+		paths[currentIndex].nbr++
 		return
 	}
 	currentPath := paths[currentIndex]
@@ -235,13 +247,13 @@ func placeAnt(paths []*AntRoom, currentIndex int, nameAnt string) {
 	initialPath := paths[0]
 
 	if currentPath.nbr+1 > nextPath.nbr+1 {
-		nextPath.nbr += 1
+		nextPath.nbr++
 		nextPath.Ant = append(nextPath.Ant, nameAnt)
 	} else if nextPath.nbr >= initialPath.nbr {
-		initialPath.nbr += 1
+		initialPath.nbr++
 		initialPath.Ant = append(initialPath.Ant, nameAnt)
 	} else {
-		currentPath.nbr += 1
+		currentPath.nbr++
 		currentPath.Ant = append(currentPath.Ant, nameAnt)
 	}
 }
@@ -290,15 +302,7 @@ func contains(slice []string, value string) bool {
 	return false
 }
 
-func checkError(e interface{}) {
-	switch err := e.(type) {
-	case error:
-		if err != nil {
-			fmt.Println("Erreur :", err)
-			os.Exit(0)
-		}
-	case string:
-		fmt.Println(err)
-		os.Exit(0)
-	}
+func checkError(err string) {
+	fmt.Println(err)
+	os.Exit(1)
 }
