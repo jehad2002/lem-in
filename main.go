@@ -26,7 +26,7 @@ func main() {
 		fmt.Println("Error reading file:", err)
 		return
 	}
-
+// ********data analysis ******************in parsegraphdata 
 	graph, startNode, endNode, numAnts := parseGraphData(data)
 	if startNode == endNode {
 		checkError("ERROR: Start room is equal to End room")
@@ -34,14 +34,14 @@ func main() {
 	if numAnts == 0 {
 		checkError("ERROR: No ants specified")
 	}
-
+// *************var to genarateAntsname************** var for utilpath to get them for way*******************
 	antNames := generateAntNames(numAnts)
 	utilsPaths := utilPaths(graph, startNode, endNode)
 
 	if len(utilsPaths) == 0 {
 		checkError("ERROR: No valid paths found")
 	}
-
+// change path to strct and put in the app
 	paths := matriceToStruct(utilsPaths)
 	resolve(paths, antNames)
 	displayAnt(paths, antNames)
@@ -67,20 +67,20 @@ func readInputFile(fileName string) (string, error) {
 
 	return content.String(), nil
 }
-
+// get the data  and data it to []string
 func parseGraphData(data string) (map[string][]string, string, string, int) {
 	lines := strings.Split(strings.TrimSpace(data), "\n")
 
 	graph := make(map[string][]string)
 	var startNode, endNode string
 	var numAnts int
-
+// for to check the line and read the numants in line not nil
 	for i, line := range lines {
 		if line != "" && i == 0 {
 			numAnts, _ = strconv.Atoi(line)
 			continue
 		}
-
+// read the line after ##start/end to get the rooms
 		if line == "##start" {
 			if i+1 < len(lines) {
 				startNode = strings.Fields(lines[i+1])[0]
@@ -89,6 +89,7 @@ func parseGraphData(data string) (map[string][]string, string, string, int) {
 			if i+1 < len(lines) {
 				endNode = strings.Fields(lines[i+1])[0]
 			}
+		// if theres error - in line put it in tow par
 		} else if strings.Contains(line, "-") {
 			parts := strings.Split(line, "-")
 			node1 := parts[0]
@@ -130,6 +131,7 @@ func utilPaths(graph map[string][]string, startNode string, endNode string) [][]
 					}
 				}
 			}
+			// if the path in the tab 
 			if !isHere {
 				tab = append(tab, path)
 				validPaths = append(validPaths, path)
@@ -139,21 +141,21 @@ func utilPaths(graph map[string][]string, startNode string, endNode string) [][]
 	}
 
 	if len(allCombinations) == 0 {
-		return allPaths[:1]
+		return allPaths[:1] // return the first way
 	}
 
-	return maxLen(allCombinations)
+	return maxLen(allCombinations) // max path
 }
 
 func findPaths(graph map[string][]string, startNode string, endNode string) [][]string {
 	queue := [][]string{{startNode}}
-	paths := [][]string{}
+	paths := [][]string{} // to save the all path available
 	for len(queue) > 0 {
 		path := queue[0]
 		queue = queue[1:]
-
+//delee this path
 		lastNode := path[len(path)-1]
-
+// get the last node in the path **************
 		if lastNode == endNode {
 			paths = append(paths, path)
 		}
@@ -166,17 +168,18 @@ func findPaths(graph map[string][]string, startNode string, endNode string) [][]
 		}
 	}
 	return paths
+	//***********************************if the way empty add it to the new path*********************************************************
 }
 
 func moveSliceToBeginning(slice [][]string, index int) [][]string {
 	if index < 0 || index >= len(slice) {
 		return slice
 	}
-
+// add list to save the result
 	result := make([][]string, len(slice))
-	copy(result[0:], slice[index:index+1])
+	copy(result[0:], slice[index:index+1]) 
 	copy(result[1:], slice[0:index])
-	copy(result[index+1:], slice[index+1:])
+	copy(result[index+1:], slice[index+1:]) // copt to the end
 	return result
 }
 
